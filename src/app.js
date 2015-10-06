@@ -39,6 +39,9 @@ var text = new UI.Text({
   backgroundColor:'black'
 });
 
+// Prepare the accelerometer
+Accel.init();
+
 // Make request to openweathermap.org
 ajax(
   {
@@ -59,12 +62,40 @@ ajax(
 
     // Show the Menu, hide the splash
     resultsMenu.show();
-    splashWindow.hide();
+    splashWindow.hide();    
+    
+    // Add an action for SELECT
+    resultsMenu.on('select', function(e){
+      // Get the forecast 
+      var forecast = data.list[e.itemIndex];
+      
+      // Assemble body string
+      var content = data.list[e.itemIndex].weather[0].description;
+      
+      // Capitalize first letter
+      content = content.charAt(0).toUpperCase() + content.substring(1);
+      
+      // Add temperature, pressure, etc
+      content += '\nTemperature: ' + Math.round(forecast.main.temp - 273.15) + '°C' +
+        '\nPressure: ' + Math.round(forecast.main.pressure)  + 'mbar' +
+        '\nWind: ' + Math.round(forecast.wind.speed) + 'mph, ' +
+        Math.round(forecast.wind.deg) + 'º';
+      
+      // Create the card for detailed view
+      var detailCard = new UI.Card({
+        title: 'Details',
+        subtitle:e.item.subtitle,
+        body:content
+      });
+      
+      detailCard.show();
+    });
 
     //Check the items are extracted OK
     for(var i = 0; i < menuItems.length; i++){
       console.log(menuItems[i].title + '|' + menuItems[i].subtitle);
     }
+    
   },
   function(error){
     console.log('Download failed: ' + error);
